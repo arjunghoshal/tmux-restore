@@ -78,6 +78,8 @@ def restore_pane(tmux_pane, pane: Pane):
     tmux_pane.send_keys("cd " + pane.path)
     tmux_pane.send_keys('C-l', enter=False)
     match pane.command:
+        case 'vi':
+            tmux_pane.send_keys("vi .")
         case 'vim' | 'nvim':
             tmux_pane.send_keys("vim .")
         case _:
