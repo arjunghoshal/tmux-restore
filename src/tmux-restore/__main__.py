@@ -76,14 +76,6 @@ class SessionList:
         return {'sessions': [session.to_dict() for session in self.sessions]}
 
 
-def save_nvim_process(process: dict) -> RunningProcess:
-    return RunningProcess([
-        Command(cmdline=' '.join(process['cmdline'])),
-        Command(cmdline='C-o', enter=False),
-        Command(cmdline='C-o', enter=False),
-        ])
-
-
 def save_general_process(process: dict):
     return RunningProcess([
         Command(cmdline=' '.join(process['cmdline']))
@@ -98,6 +90,8 @@ def save_pane_processes(pane) -> list[RunningProcess]:
     GENERAL_COMMANDS = [
             'emacs',
             'vi',
+            'vim',
+            'nvim',
             'ssh',
             'psql',
             'mysql',
@@ -114,12 +108,10 @@ def save_pane_processes(pane) -> list[RunningProcess]:
             ]
     for process in running_processes:
         match process['cmdline'][0]:
-            case '-bash':
-                continue
-            case 'vim' | 'nvim':
-                processes.append(save_nvim_process(process))
             case command if command in GENERAL_COMMANDS:
                 processes.append(save_general_process(process))
+            case _:
+                continue
     return processes
 
 
