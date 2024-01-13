@@ -1,0 +1,33 @@
+[project]
+name = "tmux-restore"
+version = "0.0.1"
+authors = [
+    { name = "Arjun Ghoshal", email = "arjunp.ghoshal@gmail.com" }
+]
+description = "A python executable that saves and restores tmux sessions across reboots"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "libtmux",
+    "pyyaml",
+    "dacite",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest"
+]
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "src",
+]
+log_cli = 1
+log_cli_level = "INFO"
+log_format = "%(levelname)s: %(message)s"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not integration\"')"
+]
