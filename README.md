@@ -38,3 +38,15 @@ tmux() {
 ```
 This will ensure that your sessions save after you exit or detach from a `tmux` session. Restart your shell to apply the effects.
 Your tmux sessions will now restore themselves across reboots!
+
+# Usage
+If you would like to save or restore your `tmux` sessions manually:
+```bash
+# Save
+python3 -m tmux-restore save
+
+# Restore
+python3 -m tmux-restore
+# OR
+python3 -m tmux-restore restore
+```
