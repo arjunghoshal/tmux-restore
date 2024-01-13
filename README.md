@@ -1,17 +1,17 @@
 # tmux-restore
 
-# Overview
+## Overview
 Works with `tmux` to save and restore sessions across reboots.
 
-# Features
+## Features
 - Save session windows, panes, and layouts automatically on detach/exit
 - Automatically restore sessions on reboot
 
-# To Do
+## To Do
 - Save pane command/state
 
-# Set Up
-To install `tmux-restore`, run the following in the project root:
+## Set Up
+To install `tmux-restore`, clone the repository and run the following in the project root:
 ```bash
 pip install tmux-restore
 ```
