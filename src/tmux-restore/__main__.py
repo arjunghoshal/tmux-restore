@@ -58,17 +58,32 @@ class SessionList:
         return {'sessions': [session.to_dict() for session in self.sessions]}
 
 
+def save_panes(window_panes) -> list[Pane]:
+    panes = []
+    for pane in window_panes:
+        panes.append(Pane(pane.pane_id, pane.pane_current_path, pane.pane_current_command))
+    return panes
+
+
+def save_windows(session_windows) -> list[Window]:
+    windows = []
+    for window in session_windows:
+        panes = save_panes(window.panes)
+        windows.append(Window(window.window_id, window.window_name, window.window_layout, panes))
+    return windows
+
+
+def save_sessions(server_sessions):
+    sessions = []
+    for session in server_sessions:
+        windows = save_windows(session.windows)
+        sessions.append(Session(session.session_id, session.session_name, windows))
+    return sessions
+
+
 def save():
     server = Server()
-    sessions = []
-    for session in server.sessions:
-        windows = []
-        for window in session.windows:
-            panes = []
-            for pane in window.panes:
-                panes.append(Pane(pane.pane_id, pane.pane_current_path, pane.pane_current_command))
-            windows.append(Window(window.window_id, window.window_name, window.window_layout, panes))
-        sessions.append(Session(session.session_id, session.session_name, windows))
+    sessions = save_sessions(server.sessions)
     session_list = SessionList(sessions)
     with open(SESSIONS_FILE, "w") as sessions_file:
         sessions_file.write(safe_dump(session_list.to_dict()))
@@ -77,6 +92,7 @@ def save():
 def restore_pane(tmux_pane, pane: Pane):
     tmux_pane.send_keys("cd " + pane.path)
     tmux_pane.send_keys('C-l', enter=False)
+    # TODO: update with new running process saves
     match pane.command:
         case 'vi':
             tmux_pane.send_keys("vi .")

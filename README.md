@@ -8,7 +8,8 @@ Works with `tmux` to save and restore sessions across reboots. Sessions are stor
 - Automatically restore sessions on reboot
 
 ## To Do
-- Save pane command/state for more commands
+- Save running processes and their states
+    - e.g. save venv, save ssh
 - Add configuration option for session file
 
 ## Set Up
