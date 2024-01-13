@@ -16,7 +16,7 @@ To install `tmux-restore`, run the following:
 ```bash
 pip install tmux-restore
 ```
-Then, to restore your saaved sessions on reboot, edit your `.bashrc` file with the following content:
+Then, to restore your saved sessions on reboot, edit your `.bashrc` file with the following content:
 ```bash
 # colors...
 
