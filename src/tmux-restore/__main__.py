@@ -74,6 +74,36 @@ def save():
         sessions_file.write(safe_dump(session_list.to_dict()))
 
 
+def restore_pane(tmux_pane, pane: Pane):
+    tmux_pane.send_keys("cd " + pane.path)
+    tmux_pane.send_keys('C-l', enter=False)
+    match pane.command:
+        case 'vim' | 'nvim':
+            tmux_pane.send_keys("vim .")
+        case _:
+            return
+
+
+def restore_window(tmux_window, window: Window):
+    tmux_window.rename_window(window.name)
+    for _ in range(len(window.panes) - 1):
+        try:
+            tmux_window.split_window()
+        except LibTmuxException:
+            tmux_window.select_layout('tiled')
+            tmux_window.split_window()
+    tmux_window.select_layout(window.layout)
+    for index, pane in enumerate(window.panes):
+        restore_pane(tmux_window.panes[index], pane)
+
+
+def restore_session(tmux_session, session: Session):
+    for index, window in enumerate(session.windows):
+        if index != 0:
+            tmux_session.new_window(attach=True)
+        restore_window(tmux_session.windows[index], window)
+
+
 def restore():
     server = Server()
     sessions = None
@@ -86,21 +116,7 @@ def restore():
         if server.has_session(session.name):
             continue
         tmux_session = server.new_session(session_name=session.name)
-        for index, window in enumerate(session.windows):
-            if index != 0:
-                tmux_session.new_window(attach=True)
-            tmux_session.windows[index].rename_window(window.name)
-            for i in range(len(window.panes) - 1):
-                try:
-                    tmux_session.windows[index].split_window()
-                except LibTmuxException:
-                    tmux_session.windows[index].select_layout('tiled')
-                    tmux_session.windows[index].split_window()
-            tmux_session.windows[index].select_layout(window.layout)
-            for i, pane in enumerate(window.panes):
-                tmux_session.windows[index].panes[i].send_keys("cd " + pane.path, enter=True)
-                tmux_session.windows[index].panes[i].send_keys('C-l', enter=False)
-
+        restore_session(tmux_session, session)
 
 def main():
     if len(argv) == 1:
