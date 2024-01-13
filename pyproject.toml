@@ -7,7 +7,7 @@ packages = ["src/tmux-restore"]
 
 [project]
 name = "tmux-restore"
-version = "0.0.3"
+version = "0.0.4"
 authors = [
     { name = "Arjun Ghoshal", email = "arjunp.ghoshal@gmail.com" }
 ]
@@ -23,6 +23,7 @@ dependencies = [
     "libtmux",
     "pyyaml",
     "dacite",
+    "psutil",
 ]
 
 [project.urls]

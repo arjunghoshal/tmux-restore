@@ -1,23 +1,41 @@
-from libtmux.server import Server
 from libtmux.exc import LibTmuxException
-from dataclasses import dataclass
 from yaml import safe_dump, safe_load
+from libtmux.server import Server
+from psutil import Process, process_iter
+from dataclasses import dataclass
+from os.path import expanduser
 from dacite import from_dict
 from sys import argv
-from os.path import expanduser
 
 
 SESSIONS_FILE = expanduser('~/.tmux-restore')
 
 
 @dataclass
+class Command:
+    cmdline: str
+    enter: bool = True
+
+    def to_dict(self):
+        return {'cmdline': self.cmdline, 'enter': self.enter}
+
+
+@dataclass
+class RunningProcess:
+    commands: list[Command]
+
+    def to_dict(self):
+        return {'commands': [c.to_dict() for c in self.commands]}
+
+
+@dataclass
 class Pane:
     id: str
     path: str
-    command: str
+    running_processes: list[RunningProcess]
 
     def to_dict(self):
-        return {'id': self.id, 'path': self.path, 'command': self.command}
+        return {'id': self.id, 'path': self.path, 'running_processes': [rp.to_dict() for rp in self.running_processes]}
 
 
 @dataclass
@@ -58,10 +76,42 @@ class SessionList:
         return {'sessions': [session.to_dict() for session in self.sessions]}
 
 
+def save_nvim_process(process: dict) -> RunningProcess:
+    return RunningProcess([
+        Command(cmdline=' '.join(process['cmdline'])),
+        Command(cmdline='C-o', enter=False),
+        Command(cmdline='C-o', enter=False),
+        ])
+
+
+def save_general_process(process: dict):
+    return RunningProcess([
+        Command(cmdline=' '.join(process['cmdline']))
+        ])
+
+
+def save_pane_processes(pane) -> list[RunningProcess]:
+    processes = []
+    pane_process = Process(int(pane.pane_pid))
+    attributes = ['pid', 'name', 'terminal', 'cmdline']
+    running_processes = [p.info for p in process_iter(attributes) if p.info['terminal'] == pane_process.terminal()]
+    GENERAL_COMMANDS = ['emacs', 'vi', 'ssh', 'psql', 'mysql', 'sqlite3', 'man', 'less', 'more', 'tail', 'top', 'htop', 'irssi', 'weechat', 'mutt']
+    for process in running_processes:
+        match process['cmdline'][0]:
+            case '-bash':
+                continue
+            case 'vim' | 'nvim':
+                processes.append(save_nvim_process(process))
+            case command if command in GENERAL_COMMANDS:
+                processes.append(save_general_process(process))
+    return processes
+
+
 def save_panes(window_panes) -> list[Pane]:
     panes = []
     for pane in window_panes:
-        panes.append(Pane(pane.pane_id, pane.pane_current_path, pane.pane_current_command))
+        processes = save_pane_processes(pane)
+        panes.append(Pane(pane.pane_id, pane.pane_current_path, processes))
     return panes
 
 
@@ -92,14 +142,9 @@ def save():
 def restore_pane(tmux_pane, pane: Pane):
     tmux_pane.send_keys("cd " + pane.path)
     tmux_pane.send_keys('C-l', enter=False)
-    # TODO: update with new running process saves
-    match pane.command:
-        case 'vi':
-            tmux_pane.send_keys("vi .")
-        case 'vim' | 'nvim':
-            tmux_pane.send_keys("vim .")
-        case _:
-            return
+    for running_process in pane.running_processes:
+        for command in running_process.commands:
+            tmux_pane.send_keys(command.cmdline, enter=command.enter)
 
 
 def restore_window(tmux_window, window: Window):

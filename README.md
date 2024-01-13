@@ -6,11 +6,21 @@ Works with `tmux` to save and restore sessions across reboots. Sessions are stor
 ## Features
 - Save session windows, panes, and layouts automatically on detach/exit
 - Automatically restore sessions on reboot
+    - Restores windows, panes, and layout
+    - Restores running processes for select programs:
+        - emacs/vi/vim/nvim
+        - man
+        - less/more
+        - tail
+        - top/htop
+        - irssi/weechat/mutt
+        - ssh
+        - psql/mysql/sqlite3
 
 ## To Do
-- Save running processes and their states
-    - e.g. save venv, save ssh
+- Save environment variables
 - Add configuration option for session file
+- Add configuration option for adding running programs to save
 
 ## Set Up
 To install `tmux-restore`, run the following:
@@ -24,7 +34,7 @@ Then, to restore your saved sessions on reboot, edit your `.bashrc` file with th
 # tmux-restore trigger
 if ! tmux info &> /dev/null; then
     if ! tmux ls &> /dev/null; then
-        python3 -m tmux-restore
+        python3 -m tmux-restore &
     fi
 fi
 
@@ -35,7 +45,7 @@ Finally, add the following content to either where the other aliases are defined
 ```bash
 tmux() {
     command tmux $*
-    python3 -m tmux-restore save
+    python3 -m tmux-restore save &
 }
 ```
 This will ensure that your sessions save after you exit or detach from a `tmux` session. Restart your shell to apply the effects.
