@@ -95,7 +95,23 @@ def save_pane_processes(pane) -> list[RunningProcess]:
     pane_process = Process(int(pane.pane_pid))
     attributes = ['pid', 'name', 'terminal', 'cmdline']
     running_processes = [p.info for p in process_iter(attributes) if p.info['terminal'] == pane_process.terminal()]
-    GENERAL_COMMANDS = ['emacs', 'vi', 'ssh', 'psql', 'mysql', 'sqlite3', 'man', 'less', 'more', 'tail', 'top', 'htop', 'irssi', 'weechat', 'mutt']
+    GENERAL_COMMANDS = [
+            'emacs',
+            'vi',
+            'ssh',
+            'psql',
+            'mysql',
+            'sqlite3',
+            'man',
+            'less',
+            'more',
+            'tail',
+            'top',
+            'htop',
+            'irssi',
+            'weechat',
+            'mutt',
+            ]
     for process in running_processes:
         match process['cmdline'][0]:
             case '-bash':
