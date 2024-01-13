@@ -1,7 +1,7 @@
 # tmux-restore
 
 ## Overview
-Works with `tmux` to save and restore sessions across reboots.
+Works with `tmux` to save and restore sessions across reboots. Sessions are stored at `~/.tmux-restore`.
 
 ## Features
 - Save session windows, panes, and layouts automatically on detach/exit
@@ -9,13 +9,14 @@ Works with `tmux` to save and restore sessions across reboots.
 
 ## To Do
 - Save pane command/state
+- Add configuration option for session file
 
 ## Set Up
-To install `tmux-restore`, clone the repository and run the following in the project root:
+To install `tmux-restore`, run the following:
 ```bash
-pip install -e .
+pip install tmux-restore
 ```
-Then edit your `.bashrc` file with the following content:
+Then, edit your `.bashrc` file with the following content:
 ```bash
 # colors...
 
@@ -29,7 +30,7 @@ fi
 # aliases...
 ```
 It is important that this is done above alias definition to avoid conflicts.
-Add the following content to either where the other aliases are defined in your `.bashrc` file or to your `.bash_aliases` file:
+Finally, add the following content to either where the other aliases are defined in your `.bashrc` file or to your `.bash_aliases` file:
 ```bash
 tmux() {
     command tmux $*
