@@ -7,7 +7,7 @@ packages = ["src/tmux-restore"]
 
 [project]
 name = "tmux-restore"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
     { name = "Arjun Ghoshal", email = "arjunp.ghoshal@gmail.com" }
 ]
