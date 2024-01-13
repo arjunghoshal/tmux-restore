@@ -13,7 +13,7 @@ Works with `tmux` to save and restore sessions across reboots.
 ## Set Up
 To install `tmux-restore`, clone the repository and run the following in the project root:
 ```bash
-pip install tmux-restore
+pip install -e .
 ```
 Then edit your `.bashrc` file with the following content:
 ```bash
