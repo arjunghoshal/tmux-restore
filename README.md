@@ -34,7 +34,7 @@ Then, to restore your saved sessions on reboot, edit your `.bashrc` file with th
 # tmux-restore trigger
 if ! tmux info &> /dev/null; then
     if ! tmux ls &> /dev/null; then
-        python3 -m tmux-restore &
+        (python3 -m tmux-restore &)
     fi
 fi
 
@@ -45,7 +45,7 @@ Finally, add the following content to either where the other aliases are defined
 ```bash
 tmux() {
     command tmux $*
-    python3 -m tmux-restore save &
+    (python3 -m tmux-restore save &)
 }
 ```
 This will ensure that your sessions save after you exit or detach from a `tmux` session. Restart your shell to apply the effects.
