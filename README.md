@@ -8,7 +8,9 @@ Works with `tmux` to save and restore sessions across reboots. Sessions are stor
 - Automatically restore sessions on reboot
     - Restores windows, panes, and layout
     - Restores running processes for select programs:
-        - emacs/vi/vim/nvim
+        - emacs/vi/
+        - vim/nvim
+          - Restores cursor location
         - man
         - less/more
         - tail

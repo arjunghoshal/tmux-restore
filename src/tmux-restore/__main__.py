@@ -1,9 +1,11 @@
 from libtmux.exc import LibTmuxException
 from yaml import safe_dump, safe_load
 from libtmux.server import Server
-from psutil import Process, process_iter
+from libtmux.common import EnvironmentMixin
+from psutil import Process, process_iter, STATUS_SLEEPING
 from dataclasses import dataclass
 from os.path import expanduser
+from time import sleep
 from dacite import from_dict
 from sys import argv
 
@@ -76,7 +78,26 @@ class SessionList:
         return {'sessions': [session.to_dict() for session in self.sessions]}
 
 
-def save_general_process(process: dict):
+def save_bash_process(pane, process: dict) -> RunningProcess | None:
+    return None
+
+
+def save_vim_process(pane, process: dict) -> RunningProcess:
+    cmdline = ' '.join(process['cmdline'])
+    session_file = f'.tmux_session_{pane.pane_id}.vim'
+    pane.send_keys('Escape')
+    pane.send_keys('Escape')
+    pane.send_keys(f':mksession! {session_file}')
+    if not f" -c 'source {session_file}'" in cmdline:
+        cmdline += f" -c 'source {session_file}'"
+    return RunningProcess([
+        Command(cmdline=cmdline),
+        Command(cmdline=f':!rm {session_file}'),
+        Command(cmdline=''),
+        ])
+
+
+def save_general_process(process: dict) -> RunningProcess:
     return RunningProcess([
         Command(cmdline=' '.join(process['cmdline']))
         ])
@@ -85,13 +106,11 @@ def save_general_process(process: dict):
 def save_pane_processes(pane) -> list[RunningProcess]:
     processes = []
     pane_process = Process(int(pane.pane_pid))
-    attributes = ['pid', 'name', 'terminal', 'cmdline']
+    attributes = ['pid', 'name', 'terminal', 'cmdline', 'status']
     running_processes = [p.info for p in process_iter(attributes) if p.info['terminal'] == pane_process.terminal()]
     GENERAL_COMMANDS = [
             'emacs',
             'vi',
-            'vim',
-            'nvim',
             'ssh',
             'psql',
             'mysql',
@@ -110,6 +129,13 @@ def save_pane_processes(pane) -> list[RunningProcess]:
         match process['cmdline'][0]:
             case command if command in GENERAL_COMMANDS:
                 processes.append(save_general_process(process))
+            case '-bash':
+                running_process = save_bash_process(pane, process)
+                if not running_process:
+                    continue
+                processes.append(running_process)
+            case 'vim' | 'nvim':
+                processes.append(save_vim_process(pane, process))
             case _:
                 continue
     return processes
