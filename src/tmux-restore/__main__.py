@@ -84,11 +84,11 @@ def save_bash_process(pane, process: dict) -> RunningProcess | None:
 
 def save_vim_process(pane, process: dict) -> RunningProcess:
     cmdline = ' '.join(process['cmdline'])
-    session_file = f'.tmux_session_{pane.pane_id}.vim'
+    session_file = f'.tmux_session_{pane.id[1:]}.vim'
     pane.send_keys('Escape')
     pane.send_keys('Escape')
     pane.send_keys(f':mksession! {session_file}')
-    if not f" -c 'source {session_file}'" in cmdline:
+    if not "source" in cmdline:
         cmdline += f" -c 'source {session_file}'"
     return RunningProcess([
         Command(cmdline=cmdline),
@@ -105,9 +105,8 @@ def save_general_process(process: dict) -> RunningProcess:
 
 def save_pane_processes(pane) -> list[RunningProcess]:
     processes = []
-    pane_process = Process(int(pane.pane_pid))
-    attributes = ['pid', 'name', 'terminal', 'cmdline', 'status']
-    running_processes = [p.info for p in process_iter(attributes) if p.info['terminal'] == pane_process.terminal()]
+    attributes = ['pid', 'name', 'terminal', 'cmdline']
+    running_processes = [p.info for p in process_iter(attributes) if p.info['terminal'] == pane.pane_tty]
     GENERAL_COMMANDS = [
             'emacs',
             'vi',
